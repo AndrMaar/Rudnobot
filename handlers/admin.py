@@ -1,8 +1,9 @@
 from aiogram import Router
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from utils.roles import is_admin
 from aiogram.filters import Command
-
+from sates.states import OrderRegistration
 
 router = Router()
 
@@ -40,3 +41,9 @@ async def show_history(message: Message):
 @router.message(Command("statistic"))
 async def show_stat(message: Message):
     await message.answer("Выберите водителя, статистику которого желаете увидеть")
+
+
+@router.message(Command("registration_car"))
+async def show_stat(message: Message, state: FSMContext):
+    await message.answer("Отправте номер машины")
+    await state.set_state(OrderRegistration.wait_car_number)
