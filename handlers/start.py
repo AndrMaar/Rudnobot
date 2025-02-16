@@ -16,7 +16,7 @@ async def cmd_start(message: Message, state: FSMContext):
         if role == 'admin':
             await message.answer(f"Добрый день, {name} {lastname}")
             kb_list = [[KeyboardButton(text="Показать информацию по водителям")], [KeyboardButton(text='Показать историю поездок')],
-                        [KeyboardButton(text='Показать статистику')], [KeyboardButton(text='Зарегистрировать машину')], [KeyboardButton(text='Привязать машину к водителю')]]
+                       [KeyboardButton(text='Показать статистику')], [KeyboardButton(text='Зарегистрировать машину')], [KeyboardButton(text='Привязать машину к водителю')]]
             await message.answer('Теперь вы можете использовать кнопки', reply_markup=ReplyKeyboardMarkup(keyboard=kb_list,  one_time_keyboard=True, input_field_placeholder="Что вы хотите сделать?"))
 
         elif role == 'driver':
