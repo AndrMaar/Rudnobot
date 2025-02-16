@@ -5,7 +5,7 @@ from aiogram import F
 
 router = Router()
 
-statuses = ["Погрузка", "Разгрузка", "Обед", "Пересменка", "Заправка", "Ремонт"]
+statuses = ["Погрузка", "Разгрузка", "Обед", "Пересменка", "Заправка", "Ремонт", "Свободен"]
 
 @router.message(F.text == "status")
 async def cmd_status(message: Message):

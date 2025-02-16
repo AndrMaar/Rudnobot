@@ -1,4 +1,6 @@
 import sqlite3
+from multiprocessing.forkserver import connect_to_new_process
+
 from utils.config import DATABASE_PATH
 
 #conn = sqlite3.connect("cars.db")
@@ -87,6 +89,10 @@ def get_user_by_telegram_id(telegram_id):
             WHERE telegram_id = ?
     ''', (telegram_id,))
         return cursor.fetchone()
+
+def get_status():
+    with sqlite3.connect(DATABASE_PATH) as conn:
+        cursor = conn.cursor()
 
 
 init_db()

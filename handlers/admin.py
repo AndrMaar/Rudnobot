@@ -21,8 +21,6 @@ async def show_stats(message: Message):
 
 
 
-
-
 @router.message(F.text == 'history')
 async def show_history(message: Message):
     if not is_admin(message.from_user.id):
