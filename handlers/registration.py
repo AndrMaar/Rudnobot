@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.types import Message
 from db.database import register_user
 from aiogram.filters import Command
-from sates.states import OrderRegistration
+from states.states import OrderRegistration
 from db.database import get_user_by_telegram_id
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
@@ -31,7 +31,7 @@ async def lastname(message: Message, state: FSMContext):
     await state.update_data(lastname=message.text)
 
     kb_list = [[KeyboardButton(text="Да"), KeyboardButton(text="Нет")]]
-    await message.answer("По умолчанию вам выданы права водителя, хотите ли вы их повысить до прав администратора?",reply_markup=ReplyKeyboardMarkup(keyboard=kb_list))
+    await message.answer("По умолчанию вам выданы права водителя, хотите ли вы их повысить до прав администратора?", reply_markup=ReplyKeyboardMarkup(keyboard=kb_list))
     await state.set_state(OrderRegistration.yn)
 
 

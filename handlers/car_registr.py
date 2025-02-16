@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from db.database import register_car
-from sates.states import OrderRegistration
+from states.states import OrderRegistration
 
 router = Router()
 
