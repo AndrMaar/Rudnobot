@@ -6,6 +6,7 @@ from states.states import OrderRegistration
 from db.database import get_user_by_telegram_id
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from utils.config import ADMIN_PASSWORD
 
 router = Router()
 
@@ -31,7 +32,7 @@ async def lastname(message: Message, state: FSMContext):
     await state.update_data(lastname=message.text)
 
     kb_list = [[KeyboardButton(text="Да"), KeyboardButton(text="Нет")]]
-    await message.answer("По умолчанию вам выданы права водителя, хотите ли вы их повысить до прав администратора?", reply_markup=ReplyKeyboardMarkup(keyboard=kb_list))
+    await message.answer("По умолчанию вам выданы права водителя, хотите ли вы их повысить до прав администратора?", reply_markup=ReplyKeyboardMarkup(keyboard=kb_list, one_time_keyboard=True))
     await state.set_state(OrderRegistration.yn)
 
 
@@ -53,7 +54,7 @@ async def yn(message: Message, state: FSMContext):
 
 @router.message(OrderRegistration.password)
 async def password(message: Message, state: FSMContext):
-    pass_a = '23456'
+    pass_a = ADMIN_PASSWORD
     if message.text == pass_a:
         await message.answer("Пароль совпадает")
         try:

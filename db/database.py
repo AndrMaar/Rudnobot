@@ -57,18 +57,6 @@ def save_status(user_id, status):
         conn.commit()
 
 
-def save_location(user_id, latitude, longitude):
-    """Сохраняем локацию пользователя в базу данных."""
-    with sqlite3.connect(DATABASE_PATH) as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO locations (user_id, latitude, longitude) VALUES (?, ?, ?)
-        ''', (user_id, latitude, longitude))
-        conn.commit()
-
-    # Инициализация базы данных при запуске
-
-
 def register_user(telegram_id, name, surname, lastname, role='driver'):
     """Регистрация пользователя."""
     with sqlite3.connect(DATABASE_PATH) as conn:

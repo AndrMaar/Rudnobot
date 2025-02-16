@@ -5,6 +5,7 @@ from handlers import driver, registration, admin, start, car_registr
 import asyncio
 from db.database import init_db
 from utils.config import BOT_TOKEN
+from db.database import get_user_by_telegram_id
 
 
 async def main():
@@ -19,15 +20,8 @@ async def main():
     dp.include_router(car_registr.router)
 
     # Установка команд бота
-    await bot.set_my_commands([
-        BotCommand(command="start", description="Запуск бота"),
-        # BotCommand(command="status", description="Сменить статус"),
-        # BotCommand(command="location", description="Отправить локацию"),
-        # BotCommand(command="registration", description="Зарегистрироваться"),
-        # BotCommand(command="registration_car", description="Зарегистрировать машину"),
-        # BotCommand(command="admin", description="Войти как админ"),
-        # BotCommand(command="driver", description="Войти как водитель")
-    ])
+    await bot.set_my_commands([BotCommand(command="start", description="Запуск бота")])
+
 
     # Инициализация базы данных
     init_db()

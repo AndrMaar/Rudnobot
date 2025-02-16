@@ -1,16 +1,13 @@
 from aiogram import Router
-from aiogram.types import Message
-from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ContentType
 from db.database import save_status
-from db.database import save_location
 from aiogram import F
 
 router = Router()
 
 statuses = ["Погрузка", "Разгрузка", "Обед", "Пересменка", "Заправка", "Ремонт"]
 
-@router.message(Command('status'))
+@router.message(F.text == "status")
 async def cmd_status(message: Message):
     keyboard = ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text=status)] for status in statuses],
@@ -18,8 +15,8 @@ async def cmd_status(message: Message):
     )
     await message.answer("Выберите ваш текущий статус:", reply_markup=keyboard)
 
-
-@router.message(Command('location'))
+'''
+@router.message(F.text == 'location')
 async def cmd_location(message: Message):
     keyboard = ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text="Отправить местоположение", request_location=True)]],
@@ -33,7 +30,7 @@ async def handle_location(message: Message):
     longitude = message.location.longitude
     save_location(user_id=message.from_user.id, latitude=latitude, longitude=longitude)
     await message.answer(f"Ваше местоположение сохранено: {latitude}, {longitude}")
-
+'''
 
 @router.message(lambda msg: msg.text in statuses)
 async def handle_status(message: Message):
