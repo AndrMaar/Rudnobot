@@ -77,3 +77,6 @@ async def close_bd(message: Message, state:FSMContext):
             await state.clear()
     else:
         await message.answer("Эта команда доступна только водителям.")
+
+
+

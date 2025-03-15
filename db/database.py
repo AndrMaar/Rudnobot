@@ -83,10 +83,10 @@ def get_user_by_telegram_id(telegram_id):
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT login, phone_number, role
-            FROM users
-            WHERE telegram_id = ?
-    ''', (telegram_id,))
+                SELECT login, phone_number, role
+                FROM users
+                WHERE telegram_id = ?
+        ''', (telegram_id,))
         return cursor.fetchone()
 
 def get_status():
@@ -97,10 +97,20 @@ def check_phone(phone_number):
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute('''
-                    SELECT phone_number
-                    FROM users
-                    WHERE phone_number = ?
-            ''', (str(phone_number),))
+                SELECT phone_number
+                FROM users
+                WHERE phone_number = ?
+        ''', (str(phone_number),))
+        return cursor.fetchone()
+
+def find_id():
+    with sqlite3.connect(DATABASE_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+                SELECT telegram_id
+                FROM users
+                WHERE role = driver
+        ''')
         return cursor.fetchone()
 
 

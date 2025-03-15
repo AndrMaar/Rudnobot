@@ -6,6 +6,7 @@ import asyncio
 from db.database import init_db
 from utils.config import BOT_TOKEN
 from db.database import get_user_by_telegram_id
+from handlers.sender import send
 
 
 async def main():
@@ -27,7 +28,7 @@ async def main():
     init_db()
     await dp.start_polling(bot)
 
-
+    await send(bot)
 
 
 if __name__ == "__main__":
