@@ -5,15 +5,22 @@ class OrderMenu(StatesGroup):
     profile_menu = State()
 
 class OrderRegistration(StatesGroup):
+
+    wait_login = State()
     wait_password = State()
-    wait_name = State()
-    wait_surname = State()
-    wait_lastname = State()
-    yn = State()
-    password = State()
+
     wait_car_number = State()
     wait_max_weight = State()
     wait_mark = State()
     wait_model = State()
+
+    wait_n = State()
+
+    wait_choise = State()
+
+    wait_bd_continue = State()
+    wait_bd_close_continue = State()
+
+
 
 
