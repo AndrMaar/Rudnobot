@@ -115,36 +115,61 @@ def set_user_by_telegram_id(telegram_id, phone):
         return cursor.fetchone()
 
 def binding(telegram_id, car_number):
-    with sqlite3.connect(DATABASE_PATH) as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-               INSERT INTO car_bindings (telegram_id, car_number)
-               VALUES (?, ?)
-           ''', (telegram_id, car_number))
-        cursor.execute('''
-               UPDATE cars
-               SET is_busy = 1
-               WHERE car_number = ?
-           ''', (car_number,))
-        cursor.execute('''
-              UPDATE users 
-              SET is_busy = 1
-              WHERE telegram_id = ?
-          ''', (telegram_id,))
-        conn.commit()
+    try:
+        with sqlite3.connect(DATABASE_PATH) as conn:
+            cursor = conn.cursor()
 
-def binding_end(telegram_id, car_number):
+            cursor.execute('SELECT is_busy FROM cars WHERE car_number = ?', (car_number,))
+            car_status = cursor.fetchone()
+            if car_status and car_status[0] == 1:
+                raise ValueError(f"Car {car_number} is already busy.")
+
+            cursor.execute('SELECT is_busy FROM users WHERE telegram_id = ?', (telegram_id,))
+            user_status = cursor.fetchone()
+            if user_status and user_status[0] == 1:
+                raise ValueError(f"User {telegram_id} is already busy.")
+
+            cursor.execute('''
+                   INSERT INTO car_bindings (telegram_id, car_number)
+                   VALUES (?, ?)
+               ''', (telegram_id, car_number))
+            cursor.execute('''
+                   UPDATE cars
+                   SET is_busy = 1
+                   WHERE car_number = ?
+               ''', (car_number,))
+            cursor.execute('''
+                  UPDATE users 
+                  SET is_busy = 1
+                  WHERE telegram_id = ?
+              ''', (telegram_id,))
+            conn.commit()
+
+
+    except (sqlite3.Error, ValueError) as e:
+        conn.rollback()
+        print(f"Error: {e}")
+
+def binding_end(telegram_id):
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute('''
-              DELETE FROM car_bindings 
-              WHERE car_number = ?
-           ''', ( car_number,))
+               SELECT car_number 
+               from car_bindings
+               WHERE telegram_id = ?
+           ''', (telegram_id,))
+        car_record = cursor.fetchone()
+
         cursor.execute('''
                UPDATE cars 
                SET is_busy = 0
                WHERE car_number = ?
-           ''', (car_number,))
+           ''', (car_record[0],))
+        cursor.execute('''
+              DELETE FROM car_bindings 
+              WHERE telegram_id = ?
+           ''', (telegram_id,))
+
         cursor.execute('''
                UPDATE users 
                SET is_busy = 0

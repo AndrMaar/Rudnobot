@@ -68,20 +68,12 @@ async def open_bd_continue(message: Message,state:FSMContext):
 @router.message(F.text == 'Закрыть смену')
 async def close_bd(message: Message, state:FSMContext):
     if is_driver(message.from_user.id) or message.from_user.username == admin_username:
-        await message.answer("Отправьте номер машины")
-        await state.set_state(OrderRegistration.wait_bd_close_continue)
+        try:
+            binding_end(telegram_id=message.from_user.id)
+            await message.answer(f"Готово")
+            await state.clear()
+        except Exception as e:
+            await message.answer(f"Что-то пошло не так, начните заново. Ошибка: {e}")
+            await state.clear()
     else:
         await message.answer("Эта команда доступна только водителям.")
-
-@router.message(OrderRegistration.wait_bd_close_continue)
-async def open_bd_continue(message: Message,state:FSMContext):
-    try:
-        binding_end(telegram_id=message.from_user.id, car_number=message.text)
-        await message.answer(f"Готово")
-        await state.clear()
-    except Exception as e:
-        await message.answer(f"Что-то пошло не так, начните заново. Ошибка: {e}")
-        await state.clear()
-
-
-
