@@ -59,11 +59,3 @@ async def reg_user(message: Message, state: FSMContext):
         await state.set_state(OrderRegistration.wait_login)
     else:
         await message.answer("Эта команда доступна только администраторам.")
-
-
-
-
-
-
-
-
