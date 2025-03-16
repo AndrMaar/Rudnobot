@@ -1,60 +1,96 @@
 from aiogram import Router
-from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
-from aiogram.filters import CommandStart
+from aiogram.filters import Command
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.fsm.context import FSMContext
-from states.states import OrderRegistration
-from db.database import get_user_by_telegram_id, check_phone, set_user_by_telegram_id, register_user
-from aiogram import F
+from utils.roles import is_admin, is_driver
 from utils.config import admin_username
-
-
+from states.states import OrderRegistration
 
 router = Router()
 
 
-@router.message(CommandStart())
+@router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext):
-    user_data = get_user_by_telegram_id(message.from_user.id)
-    if message.from_user.username == admin_username:
-        await message.answer(f"Добрый день")
-        kb_list = ([[KeyboardButton(text="Показать информацию по водителям")],
-                   [KeyboardButton(text='Показать историю поездок')], [KeyboardButton(text='Показать статистику')],
-                   [KeyboardButton(text='Зарегистрировать машину')], [KeyboardButton(text='Зарегистрировать пользователя')],
-                   [KeyboardButton(text="Отправить текущий статус")], [KeyboardButton(text="Открыть смену")], [KeyboardButton(text="Закрыть смену")]])
-        await message.answer('Теперь вы можете использовать кнопки',
-                             reply_markup=ReplyKeyboardMarkup(keyboard=kb_list, one_time_keyboard=True,
-                                                              input_field_placeholder="Что вы хотите сделать?"))
+    # Очищаем состояние
+    await state.clear()
 
-    elif user_data:
-        login, phone_number, role = user_data
-        if role == 'admin':
-            await message.answer(f"Добрый день, {login}")
-            kb_list = [[KeyboardButton(text="Показать информацию по водителям")], [KeyboardButton(text='Показать историю поездок')],[KeyboardButton(text='Показать статистику')], [KeyboardButton(text='Зарегистрировать машину')], [KeyboardButton(text='Зарегистрировать водителя')]]
-            await message.answer('Теперь вы можете использовать кнопки', reply_markup=ReplyKeyboardMarkup(keyboard=kb_list,  one_time_keyboard=True, input_field_placeholder="Что вы хотите сделать?"))
-        elif role == 'driver':
-            await message.answer(f"Добрый день, {login}")
-            kb_list = [[KeyboardButton(text="Отправить текущий статус")], [KeyboardButton(text="Открыть смену")], [KeyboardButton(text="Закрыть смену")]]
-            await message.answer('Теперь вы можете использовать кнопки', reply_markup=ReplyKeyboardMarkup(keyboard=kb_list, resize_keyboard=True, one_time_keyboard=True, input_field_placeholder="Что вы хотите сделать?"))
+    # Определяем роль пользователя
+    user_id = message.from_user.id
+
+    # Создаем клавиатуру в зависимости от роли
+    if is_admin(user_id) or message.from_user.username == admin_username:
+        # Клавиатура для администратора
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="Информация по водителям", callback_data="show_drivers_info")],
+                [InlineKeyboardButton(text="История поездок", callback_data="show_trip_history")],
+                [InlineKeyboardButton(text="Статистика", callback_data="show_statistics")],
+                [InlineKeyboardButton(text="Зарегистрировать машину", callback_data="register_car")],
+                [InlineKeyboardButton(text="Зарегистрировать пользователя", callback_data="register_user")]
+            ]
+        )
+        await message.answer("Добро пожаловать в панель администратора!", reply_markup=keyboard)
+
+    elif is_driver(user_id):
+        # Клавиатура для водителя
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="Отправить текущий статус", callback_data="send_status")],
+                [InlineKeyboardButton(text="Открыть смену", callback_data="open_shift")],
+                [InlineKeyboardButton(text="Закрыть смену", callback_data="close_shift")]
+            ]
+        )
+        await message.answer("Добро пожаловать, водитель!", reply_markup=keyboard)
 
     else:
-        kb_list = [[KeyboardButton(text="Отправить номер телефона", request_contact=True)]]
-        await message.answer('Вам необходимо войти', reply_markup=ReplyKeyboardMarkup(keyboard=kb_list, resize_keyboard=True, one_time_keyboard=True))
-        await state.set_state(OrderRegistration.wait_n)
-@router.message(OrderRegistration.wait_n)
-async def checking(message: Message, state: FSMContext):
-    aaaaaa = message.contact.phone_number
-    print(aaaaaa)
-    if check_phone(aaaaaa):
-        print("1")
-        set_user_by_telegram_id(message.from_user.id, aaaaaa)
-        user_data = get_user_by_telegram_id(message.from_user.id)
-        if user_data:
-            login, phone_number, role = user_data
-            if role == 'admin':
-                await message.answer(f"Добрый день, {login}")
-                kb_list = [[KeyboardButton(text="Показать информацию по водителям")], [KeyboardButton(text='Показать историю поездок')],[KeyboardButton(text='Показать статистику')], [KeyboardButton(text='Зарегистрировать машину')], [KeyboardButton(text='Зарегистрировать водителя')]]
-                await message.answer('Теперь вы можете использовать кнопки', reply_markup=ReplyKeyboardMarkup(keyboard=kb_list,  one_time_keyboard=True, input_field_placeholder="Что вы хотите сделать?"))
-            elif role == 'driver':
-                await message.answer(f"Добрый день, {login}")
-                kb_list = [[KeyboardButton(text="Отправить текущий статус")], [KeyboardButton(text="Открыть смену")], [KeyboardButton(text="Закрыть смену")]]
-                await message.answer('Теперь вы можете использовать кнопки', reply_markup=ReplyKeyboardMarkup(keyboard=kb_list, resize_keyboard=True, one_time_keyboard=True, input_field_placeholder="Что вы хотите сделать?"))
+        # Клавиатура для нового пользователя
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="Регистрация", callback_data="register")]
+            ]
+        )
+        await message.answer("Добро пожаловать! Для начала работы необходимо зарегистрироваться.",
+                             reply_markup=keyboard)
+
+
+# Обработчики для callback-запросов
+@router.callback_query(lambda c: c.data == "send_status")
+async def process_send_status(callback: CallbackQuery):
+    from handlers.driver import statuses
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text=status, callback_data=f"status_{status}")]
+            for status in statuses
+        ]
+    )
+    await callback.message.edit_text("Выберите ваш текущий статус:", reply_markup=keyboard)
+    await callback.answer()
+
+
+@router.callback_query(lambda c: c.data == "open_shift")
+async def process_open_shift(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_text("Отправьте номер машины")
+    await state.set_state(OrderRegistration.wait_bd_continue)
+    await callback.answer()
+
+
+@router.callback_query(lambda c: c.data == "close_shift")
+async def process_close_shift(callback: CallbackQuery):
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Подтвердить", callback_data="confirm_close_shift"),
+                InlineKeyboardButton(text="Отмена", callback_data="cancel_close_shift")
+            ]
+        ]
+    )
+    await callback.message.edit_text("Вы уверены, что хотите закрыть смену?",
+                                     reply_markup=keyboard)
+    await callback.answer()
+
+
+@router.callback_query(lambda c: c.data == "register")
+async def process_register(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_text("Введите ваш логин:")
+    await state.set_state(OrderRegistration.wait_login)
+    await callback.answer()

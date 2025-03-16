@@ -8,7 +8,7 @@ async def send(bot):
     while True:
 
         now = datetime.now()
-        next_hour = (now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1))
+        next_hour = (now.replace(minute=0, second=0, microsecond=0) + timedelta(minutes=1))
         wait_time = (next_hour - now).total_seconds()
 
         # Ожидаем до следующего часа
