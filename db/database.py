@@ -122,7 +122,7 @@ def find_id():
         cursor.execute('''
             SELECT telegram_id 
             FROM users 
-            WHERE role = 'driver'  # Добавил кавычки
+            WHERE role = 'driver'
         ''')
         return [row[0] for row in cursor.fetchall()]  # Получаем все ID
 
