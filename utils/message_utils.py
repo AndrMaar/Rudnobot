@@ -1,7 +1,7 @@
 import asyncio
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
-
+from handlers.start import cmd_start
 
 async def send_and_delete(message: Message, text: str, reply_markup=None, delete_after=5, delete_original=True,
                           state: FSMContext = None):
@@ -46,6 +46,25 @@ async def send_and_delete(message: Message, text: str, reply_markup=None, delete
     return sent_message.message_id
 
 
+async def clean_chat_and_restart(message, state: FSMContext = None):
+    """
+    Очищает чат от предыдущих сообщений и вызывает команду /start
+    """
+    # Удаляем сохраненные сообщения из состояния
+    if state:
+        data = await state.get_data()
+        message_ids = data.get("message_ids", [])
+        for message_id in message_ids:
+            try:
+                await message.bot.delete_message(message.chat.id, message_id)
+            except Exception as e:
+                print(f"Ошибка удаления сообщения {message_id}: {e}")
+        # Очищаем список сообщений
+        await state.update_data(message_ids=[])
+
+    # Вызываем команду start
+
+    await cmd_start(message, state)
 
 
 

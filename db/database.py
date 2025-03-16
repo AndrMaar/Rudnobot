@@ -103,15 +103,28 @@ def check_phone(phone_number):
         ''', (str(phone_number),))
         return cursor.fetchone()
 
+def check_shift_status(telegram_id):
+    """Проверяет, открыта ли смена у водителя"""
+    with sqlite3.connect(DATABASE_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT is_busy
+            FROM users
+            WHERE telegram_id = ?
+        ''', (telegram_id,))
+        result = cursor.fetchone()
+        return result and result[0] == 1
+
+
 def find_id():
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute('''
-                SELECT telegram_id
-                FROM users
-                WHERE role = driver
+            SELECT telegram_id 
+            FROM users 
+            WHERE role = 'driver'  # Добавил кавычки
         ''')
-        return cursor.fetchone()
+        return [row[0] for row in cursor.fetchall()]  # Получаем все ID
 
 
 def set_user_by_telegram_id(telegram_id, phone):

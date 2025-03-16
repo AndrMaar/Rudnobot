@@ -23,12 +23,14 @@ async def main():
     # Установка команд бота
     await bot.set_my_commands([BotCommand(command="start", description="Запуск бота")])
 
-
     # Инициализация базы данных
     init_db()
-    await dp.start_polling(bot)
 
-    await send(bot)
+    # Создаем задачу для рассылки
+    asyncio.create_task(send(bot))
+
+    # Запускаем бота
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":

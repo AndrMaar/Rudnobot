@@ -1,21 +1,24 @@
 from aiogram import Router
 from aiogram.filters import Command
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, KeyboardButton, \
+    ReplyKeyboardMarkup
 from aiogram.fsm.context import FSMContext
+from db.database import check_phone, set_user_by_telegram_id, get_user_by_telegram_id
 from utils.roles import is_admin, is_driver
 from utils.config import admin_username
 from states.states import OrderRegistration
+import asyncio
 
 router = Router()
 
 
 @router.message(Command("start"))
-async def cmd_start(message: Message, state: FSMContext):
+async def cmd_start(message: Message, state: FSMContext, text):
     # Очищаем состояние
     await state.clear()
 
     # Определяем роль пользователя
-    user_id = message.from_user.id
+    user_id = message.chat.id
 
     # Создаем клавиатуру в зависимости от роли
     if is_admin(user_id) or message.from_user.username == admin_username:
@@ -29,7 +32,13 @@ async def cmd_start(message: Message, state: FSMContext):
                 [InlineKeyboardButton(text="Зарегистрировать пользователя", callback_data="register_user")]
             ]
         )
-        await message.answer("Добро пожаловать в панель администратора!", reply_markup=keyboard)
+        sent_message = await message.answer("Добро пожаловать в панель администратора!", reply_markup=keyboard)
+
+        # Сохраняем ID сообщения
+        data = await state.get_data()
+        message_ids = data.get("message_ids", [])
+        message_ids.append(sent_message.message_id)
+        await state.update_data(message_ids=message_ids)
 
     elif is_driver(user_id):
         # Клавиатура для водителя
@@ -40,31 +49,35 @@ async def cmd_start(message: Message, state: FSMContext):
                 [InlineKeyboardButton(text="Закрыть смену", callback_data="close_shift")]
             ]
         )
-        await message.answer("Добро пожаловать, водитель!", reply_markup=keyboard)
+        sent_message = await message.answer("Добро пожаловать, водитель!", reply_markup=keyboard)
+
+        # Сохраняем ID сообщения
+        data = await state.get_data()
+        message_ids = data.get("message_ids", [])
+        message_ids.append(sent_message.message_id)
+        await state.update_data(message_ids=message_ids)
 
     else:
-        # Клавиатура для нового пользователя
-        keyboard = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(text="Регистрация", callback_data="register")]
-            ]
-        )
-        await message.answer("Добро пожаловать! Для начала работы необходимо зарегистрироваться.",
-                             reply_markup=keyboard)
+        kb_list = [[KeyboardButton(text="Отправить номер телефона", request_contact=True)]]
+        sent_message = await message.answer('Вам необходимо войти',
+                                            reply_markup=ReplyKeyboardMarkup(keyboard=kb_list, resize_keyboard=True,
+                                                                             one_time_keyboard=True))
+
+        # Сохраняем ID сообщения
+        data = await state.get_data()
+        message_ids = data.get("message_ids", [])
+        message_ids.append(sent_message.message_id)
+        await state.update_data(message_ids=message_ids)
+
+        await state.set_state(OrderRegistration.wait_n)
+
+
+
 
 
 # Обработчики для callback-запросов
-@router.callback_query(lambda c: c.data == "send_status")
-async def process_send_status(callback: CallbackQuery):
-    from handlers.driver import statuses
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text=status, callback_data=f"status_{status}")]
-            for status in statuses
-        ]
-    )
-    await callback.message.edit_text("Выберите ваш текущий статус:", reply_markup=keyboard)
-    await callback.answer()
+
+
 
 
 @router.callback_query(lambda c: c.data == "open_shift")
