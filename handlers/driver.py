@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from db.database import save_status, binding, binding_end, check_shift_status
+from db.database import save_status, binding, binding_end, check_shift_status, create_status
 from aiogram import F
 from utils.roles import is_driver
 from utils.config import admin_username

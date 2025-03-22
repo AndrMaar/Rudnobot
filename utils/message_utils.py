@@ -5,16 +5,7 @@ from handlers.start import cmd_start
 
 async def send_and_delete(message: Message, text: str, reply_markup=None, delete_after=5, delete_original=True,
                           state: FSMContext = None):
-    """
-    Отправляет сообщение и удаляет его через указанное время.
 
-    :param message: Оригинальное сообщение
-    :param text: Текст сообщения
-    :param reply_markup: Клавиатура (опционально)
-    :param delete_after: Время в секундах до удаления (0 - не удалять)
-    :param delete_original: Удалять ли оригинальное сообщение
-    :param state: Объект FSMContext для сохранения ID сообщений
-    """
     # Удаляем оригинальное сообщение пользователя
     if delete_original:
         try:
@@ -47,10 +38,6 @@ async def send_and_delete(message: Message, text: str, reply_markup=None, delete
 
 
 async def clean_chat_and_restart(message, state: FSMContext = None):
-    """
-    Очищает чат от предыдущих сообщений и вызывает команду /start
-    """
-    # Удаляем сохраненные сообщения из состояния
     if state:
         data = await state.get_data()
         message_ids = data.get("message_ids", [])

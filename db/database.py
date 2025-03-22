@@ -13,7 +13,7 @@ def init_db():
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS statuses (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
+                user_id INTEGER UNIQUE NOT NULL,
                 status TEXT NOT NULL,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
             )
@@ -31,9 +31,9 @@ def init_db():
         cursor.execute('''
              CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                telegram_id INTEGER UNIQUE NOT NULL,
+                telegram_id INTEGER UNIQUE,
                 login TEXT NOT NULL,
-                phone_number TEXT NOT NULL,
+                phone_number TEXT UNIQUE NOT NULL,
                 role TEXT NOT NULL ,
                 is_busy INTEGER DEFAULT 0
              )
@@ -48,13 +48,24 @@ def init_db():
         ''')
 
 
-def save_status(user_id, status):
+def create_status(user_id, status):
     """Сохраняем статус пользователя в базу данных."""
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute('''
             INSERT INTO statuses (user_id, status) VALUES (?, ?)
         ''', (user_id, status))
+        conn.commit()
+
+def save_status(status, user_id):
+    """Сохраняем статус пользователя в базу данных."""
+    with sqlite3.connect(DATABASE_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE statuses
+            SET status = ?
+            WHERE user_id = ?
+        ''', (status, user_id,))
         conn.commit()
 
 
@@ -89,9 +100,6 @@ def get_user_by_telegram_id(telegram_id):
         ''', (telegram_id,))
         return cursor.fetchone()
 
-def get_status():
-    with sqlite3.connect(DATABASE_PATH) as conn:
-        cursor = conn.cursor()
 
 def check_phone(phone_number):
     with sqlite3.connect(DATABASE_PATH) as conn:
@@ -200,5 +208,23 @@ def binding_end(telegram_id):
            ''', (telegram_id,))
         conn.commit()
 
+
+def remove_user(phone_number):
+    with sqlite3.connect(DATABASE_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            DELETE FROM users 
+            WHERE phone_number = ? 
+    ''', (phone_number,))
+        conn.commit()
+
+def remove_car(car_number):
+    with sqlite3.connect(DATABASE_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            DELETE FROM cars 
+            WHERE car_number = ? 
+    ''', (car_number,))
+        conn.commit()
 
 init_db()

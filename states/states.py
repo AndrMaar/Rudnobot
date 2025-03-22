@@ -21,6 +21,9 @@ class OrderRegistration(StatesGroup):
     wait_bd_continue = State()
     wait_bd_close_continue = State()
 
+    wait_delete_user = State()
+    wait_delete_car = State()
+
 
 
 

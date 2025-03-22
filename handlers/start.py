@@ -12,8 +12,11 @@ import asyncio
 router = Router()
 
 
+
 @router.message(Command("start"))
-async def cmd_start(message: Message, state: FSMContext, text):
+async def cmd_start(message: Message, state: FSMContext, ):
+
+
     # Очищаем состояние
     await state.clear()
 
@@ -25,14 +28,13 @@ async def cmd_start(message: Message, state: FSMContext, text):
         # Клавиатура для администратора
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="Информация по водителям", callback_data="show_drivers_info")],
-                [InlineKeyboardButton(text="История поездок", callback_data="show_trip_history")],
-                [InlineKeyboardButton(text="Статистика", callback_data="show_statistics")],
                 [InlineKeyboardButton(text="Зарегистрировать машину", callback_data="register_car")],
-                [InlineKeyboardButton(text="Зарегистрировать пользователя", callback_data="register_user")]
+                [InlineKeyboardButton(text="Зарегистрировать пользователя", callback_data="register_user")],
+                [InlineKeyboardButton(text="Удалить машину", callback_data="delete_car")],
+                [InlineKeyboardButton(text="Удалить пользователя", callback_data="delete_user")]
             ]
         )
-        sent_message = await message.answer("Добро пожаловать в панель администратора!", reply_markup=keyboard)
+        sent_message = await message.answer("Выберите действие", reply_markup=keyboard)
 
         # Сохраняем ID сообщения
         data = await state.get_data()
@@ -49,7 +51,7 @@ async def cmd_start(message: Message, state: FSMContext, text):
                 [InlineKeyboardButton(text="Закрыть смену", callback_data="close_shift")]
             ]
         )
-        sent_message = await message.answer("Добро пожаловать, водитель!", reply_markup=keyboard)
+        sent_message = await message.answer("Выберите действие", reply_markup=keyboard)
 
         # Сохраняем ID сообщения
         data = await state.get_data()
