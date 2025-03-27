@@ -31,7 +31,8 @@ async def cmd_start(message: Message, state: FSMContext, ):
                 [InlineKeyboardButton(text="Зарегистрировать машину", callback_data="register_car")],
                 [InlineKeyboardButton(text="Зарегистрировать пользователя", callback_data="register_user")],
                 [InlineKeyboardButton(text="Удалить машину", callback_data="delete_car")],
-                [InlineKeyboardButton(text="Удалить пользователя", callback_data="delete_user")]
+                [InlineKeyboardButton(text="Удалить пользователя", callback_data="delete_user")],
+                [InlineKeyboardButton(text="Просмотр статусов", callback_data="status")]
             ]
         )
         sent_message = await message.answer("Выберите действие", reply_markup=keyboard)

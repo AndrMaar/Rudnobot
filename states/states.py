@@ -24,6 +24,10 @@ class OrderRegistration(StatesGroup):
     wait_delete_user = State()
     wait_delete_car = State()
 
+class Statuses(StatesGroup):
+    wait_driver = State()
+    wait_car = State()
+
 
 
 

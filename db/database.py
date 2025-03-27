@@ -227,4 +227,47 @@ def remove_car(car_number):
     ''', (car_number,))
         conn.commit()
 
+def drivers_list():
+    with sqlite3.connect(DATABASE_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+        SELECT login
+        FROM users
+        WHERE role=\'driver\' AND is_busy=1''')
+        return  cursor.fetchall()
+
+def cars_list():
+    with sqlite3.connect(DATABASE_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+        SELECT car_number
+        FROM cars
+        WHERE is_busy=1''')
+        return  cursor.fetchall()
+
+def get_driver_statuses(driver):
+    with sqlite3.connect(DATABASE_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+        SELECT status, timestamp
+        FROM statuses
+        WHERE user_id = (
+        SELECT telegram_id
+        FROM users
+        WHERE login=?)
+        LIMIT 5''', (driver, ))
+        return cursor.fetchall()
+
+def get_car_statuses(car_number):
+    with sqlite3.connect(DATABASE_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+        SELECT status, timestamp
+        FROM statuses
+        WHERE user_id = (
+        SELECT telegram_id
+        FROM car_bindings
+        WHERE car_number=?)''', (car_number, ))
+        return cursor.fetchall()
+
 init_db()
